@@ -5,20 +5,37 @@ import {pipeline} from "stream"
 import { Transform } from 'json2csv';
 import {createFileStream} from "../methods/csv.js"
 import Authors from "../methods/schemas/authorSchema.js"
+import { basicAuthMiddleware } from '../methods/auth/basic.js';
 
 const ARouter = express.Router();
 const filePath = getFilePath('authors.json')
 
 // ********************Requests******************************
+
+ARouter.get("/login", basicAuthMiddleware ,async (req, res, next) => {
+  try {    
+      if(req.user){
+        res.status(200).send({_id: req.user._id})
+      }
+    
+  } catch (error) {
+    console.log(error)
+    next(error)
+  }
+})
+
+
 ARouter.get('/', async (req, res, next) => {
   try {
     const authors = await Authors.find({})
-    res.status(200).send(await getItems(filePath))
+    res.status(200).send(authors)
   } catch (error) {
     next(error)
   }
   
 })
+
+
 
 ARouter.get('/csv', async (req, res, next) => {
   try {
@@ -37,8 +54,8 @@ ARouter.get('/csv', async (req, res, next) => {
 })
 ARouter.get('/:id', async (req, res) => {
   try {
-    const authors = await getItems(filePath)
-    res.status(200).send(authors.filter(a =>a._id === req.params.id))
+    const author = Authors.findById(req.params.id)
+    res.status(200).send(author)
   } catch (error) {
     
   }

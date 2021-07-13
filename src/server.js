@@ -2,7 +2,7 @@ import express from 'express';
 import ARouter from "./routes/authors.js"
 import bpRouter from './routes/blogPosts.js';
 import fRouter from './methods/fileHandler.js'
-import { notFoundHandler,badRequestHandler,catchAllHandler, forbiddenHandler } from './methods/errorHandlers.js';
+import { notFoundHandler,badRequestHandler,catchAllHandler, forbiddenHandler, authHandler } from './methods/errorHandlers.js';
 import {publicFolderPath2}  from "./methods/fs-tools.js"
 import  createError from 'http-errors';
 import cors from "cors"
@@ -34,10 +34,11 @@ app.use("/authors",ARouter, fRouter)
 app.use("/blogPosts", bpRouter, fRouter, rc)
 
 /* Error Middleware */
+app.use(authHandler)
 app.use(notFoundHandler)
 app.use(badRequestHandler)
-app.use(catchAllHandler)
 app.use(forbiddenHandler)
+app.use(catchAllHandler)
 
 app.use((req,res,next)=>{
   if(!req.route && !req.headersSent){
